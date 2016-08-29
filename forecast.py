@@ -8,7 +8,7 @@ Classes:
   Parse: Reads the source file and creates a list of IP addresses
 
 Troubleshooting:
-  This module was built and tested with Python 2.7 on Ubuntu Linux. 
+  This module was built and tested with Python 2.7.11 on Ubuntu Linux. 
 
 """ 
 
@@ -72,25 +72,37 @@ def test( ip ):
   high_temp = get_high_temp_from_ip( ip )
   print( 'Temp:' + high_temp )
 
-# Read the passed in file and return a list of ip addresses
-#def scan_for_ip( file = './data/devops_coding_input_log1.log' ):
-def scan_for_ip( file = './data/fake-test.log' ):
-  ips=[]
-  with open( file, 'r' ) as ff:
-    reader=csv.reader( ff, delimiter = '\t' )
-    for date, ip in reader:
-      print( date, ip )
-      try:
-        high_temp = get_high_temp_from_ip( ip )
-      except:
-        print( "ERROR!!!" )
-      print( 'Temp:' + high_temp )
-    
-  
 
-# Main 
-#test( '8.8.8.8' )
-scan_for_ip( )
+def scan_for_ip( file = './data/devops_coding_input_log1.log' ):
+  ip_list = []
+
+  # Pandas.pydata.org would be better but to keep this simple just use brute force column parsing
+  with open( file, 'r' ) as ff:
+    for line in ff.readlines():
+      cells = line.split( '\t' )
+      # assume cell 
+      ip = cells[23]
+      ip_list.append( ip )
+#      if len(ip_list)  > 5 :
+#        break
+
+  print( ip_list )
+  return ip_list
+
+
+ip_list = scan_for_ip( )
+
+fails = 0
+for ip in ip_list:
+  try:
+    high_temp = get_high_temp_from_ip( ip )
+    print( "Temp:" + str( high_temp ) )
+  except:
+    fails = fails + 1
+    print( ">>>>>ip failrure: " + str( ip ) )
+
+print( "Done total failures: "  + str( fails ) )
+
 #test( '62.102.227.177' )
 #test( '184.168.47.225' )
 #test( '94.199.116.23' )
