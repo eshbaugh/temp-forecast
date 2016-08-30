@@ -114,7 +114,7 @@ def report_histogram( temperatures, num_buckets = 5 ):
       if bottom <= temp and temp <= top:
         count = count + 1
        
-    bottom = top
+    bottom = top + ZERO_TOL # avoid counting the same number twice
     top = top + step
       
     bucket_count.append( count )
@@ -128,6 +128,9 @@ def report_histogram( temperatures, num_buckets = 5 ):
 ip_list = scan_for_ip( )
 
 temperatures = []
+temperatures = [92,85,74,90,87,70,82,78,74,89,73,74,81,86,77,85,83,85]
+report_histogram( temperatures )
+exit()
 
 fails = 0
 for ip in ip_list:
