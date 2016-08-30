@@ -20,6 +20,9 @@ except ImportError as err_str:
   print( "{}, make sure module exists on your server".format(err_str) ) 
   exit()
 
+# Constants
+ZERO_TOL = .001
+
 def get_high_temp_from_ip( ip = '8.8.8.8' ):
   zip = _get_location( ip )
   woeid = _get_woeid( zip )
@@ -66,13 +69,6 @@ def _get_woeid( zip = 80301 ):
   return data['query']['results']['place'][0]['woeid']
 
 
-def test( ip ):
-  print( '------------' )
-  print( 'IP:' + ip )
-  high_temp = get_high_temp_from_ip( ip )
-  print( 'Temp:' + high_temp )
-
-
 def scan_for_ip( file = './data/devops_coding_input_log1.log' ):
   ip_list = []
 
@@ -83,28 +79,69 @@ def scan_for_ip( file = './data/devops_coding_input_log1.log' ):
       # assume cell 
       ip = cells[23]
       ip_list.append( ip )
-#      if len(ip_list)  > 5 :
-#        break
+
+# Comment out for a fast test
+      if len(ip_list)  > 20 :
+        break
 
   print( ip_list )
   return ip_list
 
 
+def report_histogram( temperatures, num_buckets = 5 ):
+  print( "Starting histogram" )
+
+  # Avoiding non standard libraries like numpy for easy of deployment in this case
+
+  max_temp = float( max(temperatures) )   
+  min_temp = float( min(temperatures) )   
+  print( "Max Temp: " + str( max_temp ) )
+  print( "Min Temp: " + str( min_temp ) )
+
+  step = float( (max_temp - min_temp) / (num_buckets-1) )
+  bucket_count = []
+
+  # All temperatures can not be the same
+  assert( abs(max_temp - min_temp) > ZERO_TOL )
+
+  bottom = min_temp
+  top = min_temp + step
+  while top <= max_temp: 
+    print( bottom, top )
+    count = 0
+    for temp in temperatures:
+      temp = float( temp )
+      if bottom <= temp and temp <= top:
+        count = count + 1
+       
+    bottom = top
+    top = top + step
+      
+    bucket_count.append( count )
+
+  print bucket_count
+  print( "out of ", len( temperatures ) )
+
+  return bucket_count
+
+
 ip_list = scan_for_ip( )
+
+temperatures = []
 
 fails = 0
 for ip in ip_list:
   try:
     high_temp = get_high_temp_from_ip( ip )
+      
     print( "Temp:" + str( high_temp ) )
+    temperatures.append( high_temp )
   except:
     fails = fails + 1
     print( ">>>>>ip failrure: " + str( ip ) )
 
-print( "Done total failures: "  + str( fails ) )
 
-#test( '62.102.227.177' )
-#test( '184.168.47.225' )
-#test( '94.199.116.23' )
-#test( '101.0.89.226' )
+report_histogram( temperatures )
+
+print( "Done total failures: "  + str( fails ) )
 
