@@ -69,7 +69,7 @@ def _get_woeid( zip = 80301 ):
   return data['query']['results']['place'][0]['woeid']
 
 
-def scan_for_ip( file = './data/devops_coding_input_log1.log' ):
+def scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 ):
   ip_list = []
 
   # Pandas.pydata.org would be better but to keep this simple just use brute force column parsing
@@ -80,23 +80,31 @@ def scan_for_ip( file = './data/devops_coding_input_log1.log' ):
       ip = cells[23]
       ip_list.append( ip )
 
-# Comment out for a fast test
-      if len(ip_list)  > 20 :
+      # limit the number of IP's read from file for testing purposes
+      if max_num_ip > 0 and len(ip_list)  >= max_num_ip :
         break
 
-  print( ip_list )
   return ip_list
 
 
 def report_histogram( temperatures, num_buckets = 5 ):
   print( "Starting histogram" )
 
-  # Avoiding non standard libraries like numpy for easy of deployment in this case
+  assert( num_buckets > 1 )
+
+  # A third party modules like numpy would be better if this use case becomes more complex 
+  # Use standard modules for now to simplify deployment on other servers
+
+  max_int = max(temperatures)   
+  min_int = min(temperatures)   
+  print( "Max int: " + str( max_int ) )
+  print( "Min int: " + str( min_int ) )
 
   max_temp = float( max(temperatures) )   
   min_temp = float( min(temperatures) )   
   print( "Max Temp: " + str( max_temp ) )
   print( "Min Temp: " + str( min_temp ) )
+  assert( max_temp > min_temp )
 
   step = float( (max_temp - min_temp) / (num_buckets-1) )
   bucket_count = []
@@ -106,6 +114,8 @@ def report_histogram( temperatures, num_buckets = 5 ):
 
   bottom = min_temp
   top = min_temp + step
+  print( "bottom:", bottom, " step:", step )
+
   while top <= max_temp: 
     print( bottom, top )
     count = 0
@@ -128,26 +138,23 @@ def report_histogram( temperatures, num_buckets = 5 ):
   return bucket_count
 
 
-ip_list = scan_for_ip( )
+def main():
+  ip_list = scan_for_ip( )
+  report_histogram( temperatures )
 
-temperatures = []
-#temperatures = [-100, -99, 0, 2, 92,86,77,85,83,85,140]
-#report_histogram( temperatures )
-#exit()
-
-fails = 0
-for ip in ip_list:
-  try:
-    high_temp = get_high_temp_from_ip( ip )
-      
-    print( "Temp:" + str( high_temp ) )
-    temperatures.append( high_temp )
-  except:
-    fails = fails + 1
-    print( ">>>>>ip failrure: " + str( ip ) )
+  fails = 0
+  for ip in ip_list:
+    try:
+      high_temp = get_high_temp_from_ip( ip )
+        
+      print( "IP:",ip," Temp:" + str( high_temp ) )
+      temperatures.append( high_temp )
+    except:
+      fails = fails + 1
+      print( ">>>>>ip failrure: " + str( ip ) )
 
 
-report_histogram( temperatures )
+  report_histogram( temperatures )
 
-print( "Done total failures: "  + str( fails ) )
+  print( "Done total failures: "  + str( fails ) )
 
