@@ -129,8 +129,9 @@ def report_histogram( temperatures, num_buckets = 5 ):
       
     bucket_count.append( count )
 
+  print "Requested buckets:", num_buckets 
   print bucket_count
-  print( "out of ", len( temperatures ) )
+  print sum( bucket_count ), "out of ", len( temperatures )
 
   # Check that every high tempertature is accounted for 
   assert( sum( bucket_count ) == len( temperatures ) )
@@ -150,7 +151,7 @@ def main():
       print( "IP:",ip," Temp:" + str( high_temp ) )
       temperatures.append( high_temp )
     except:
-      fails = fails + 1
+      fails += 1
       print( ">>>>>ip failrure: " + str( ip ) )
 
 

@@ -1,20 +1,14 @@
 #!/usr/bin/python
+# make sure to invoke this test from the root directory - ./tests/temperature.py
 
-execfile("/home/admin3/temp-forecast/forecast.py")
+INFILE = 'data/temperature_list.tsv'
+OUTFILE = 'data/histogram_report.tsv'
 
-#import sys
-#sys.path.insert( 0, "../" )
+execfile("forecast.py")
 
-#import forecast
+ff = open( INFILE, 'r' )
+temperatures = ff.read().splitlines()
+ff.close() 
 
-#temperatures = [94,92,86,77,85,83,85,140]
-temperatures = [94,92,86]
-print temperatures
-
-report_histogram( temperatures )
-
-"""
-#my_randoms = random.sample(xrange(94,102), 100)
-"""
-
+report_histogram( temperatures, 5 )
 
