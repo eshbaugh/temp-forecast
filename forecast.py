@@ -122,15 +122,18 @@ def report_histogram( temperatures, num_buckets = 5 ):
   print bucket_count
   print( "out of ", len( temperatures ) )
 
+  # Check that every high tempertature is accounted for 
+  assert( sum( bucket_count ) == len( temperatures ) )
+
   return bucket_count
 
 
 ip_list = scan_for_ip( )
 
 temperatures = []
-temperatures = [92,85,74,90,87,70,82,78,74,89,73,74,81,86,77,85,83,85]
-report_histogram( temperatures )
-exit()
+#temperatures = [-100, -99, 0, 2, 92,86,77,85,83,85,140]
+#report_histogram( temperatures )
+#exit()
 
 fails = 0
 for ip in ip_list:
