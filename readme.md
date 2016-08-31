@@ -31,6 +31,13 @@ forecast.py -h
 
 
 ### Further Development 
+- Performance tune: Currently it can take a few hours to run 4000 records, speed will become prohibitive with 40,000 ++
+  - Identify top time takers, my guess is it is the REST calls
+  - Use specific sql selects instead of *
+  - Research performance of paid weather services
+  - ...
+- Modularize to maximize code reuse once use cases are fully understood.
+
 
 
 ### Reference Links
