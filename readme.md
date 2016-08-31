@@ -4,14 +4,21 @@ This Python module will read the IP addresses from the 24th column in the input 
 ### Usage
 To except all default values
 - Linux: ./forecast.py 
-- Windows: c:\Python27\python.exe c:\<location of script>\forecast.py
+- Windows: 
+  - cd c:\location of the script
+  - c:\Python27\python.exe .\forecast.py
 
 Additional arguments
+
 forecast.py [input file] [output file] [histogram buckets] [max records]
 - input file: Tab-separated data file with the 24th column containing IP addresses
 - output file: Location of the file that will be created and contain the output of the histogram buckets
 - Histogram buckets: The number of categories between the minimum and maximum temperature to place counts of the temperatures in that range.
 - max records: Limits the number of items read from the input file, default is unlimited.
+
+To display command help
+
+forecast.py -h 
 
 ### TODO 
 * parse argements DONE
