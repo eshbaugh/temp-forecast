@@ -23,7 +23,9 @@ forecast.py -h
 ### TODO 
 * parse argements DONE
 * create an ouptut tsv file
-* create readme
+* Error Checking
+* Log File
+* create readme WIP
 * cleanup code
 * Class / modules?
 
