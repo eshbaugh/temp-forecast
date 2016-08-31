@@ -3,6 +3,16 @@
 
 execfile("forecast.py")
 
-woeid = _get_woeid2( 39.9135737, -105.01548269999999 )
 
-print woeid
+
+INFILE = 'data/ip_list.tsv'
+
+ff = open( INFILE, 'r' )
+ip_list = ff.read().splitlines()
+ff.close()
+
+for ip in ip_list:
+  geo_loc = _get_location2( ip )
+  woeid = _get_woeid2( geo_loc[0], geo_loc[1] )
+  high_temp = _get_tomorrows_high_temp( woeid )
+  print high_temp

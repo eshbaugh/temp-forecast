@@ -51,11 +51,27 @@ def _get_location( ip, service = 'http://ip-api.com/json/' ):
   location_json = json.loads( location )
 #  print( location_json )
   print( location_json['city'] + ',' + location_json['region'] + ',' + location_json['countryCode'] + ',' + location_json['zip'] )
-  print( location_json['lon'] )
-  print( location_json['lat'] )
 
   return location_json['zip']
 
+# returns latitude and longitude
+def _get_location2( ip, service = 'http://ip-api.com/json/' ):
+  location = urllib.urlopen( service + ip ).read()
+  location_json = json.loads( location )
+#  print( location_json )
+  try: 
+    print( location_json['city'] + ',' + location_json['region'] + ',' + location_json['countryCode'] + ',' + location_json['zip'] )
+  except:
+    print "Ignoring incomplte location name info"
+
+  geo_loc = []
+  geo_loc.append( location_json['lat'] )
+  geo_loc.append( location_json['lon'] )
+
+  return geo_loc
+
+# Return the Where On Earth ID based on a zip code for now
+# Default is Boulder CO.
 
 # Return the Where On Earth ID based on a zip code for now
 # Default is Boulder CO.
