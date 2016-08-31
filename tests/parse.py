@@ -4,7 +4,7 @@
 OUTFILE = 'data/ip_list.tsv'
 INFILE = 'data/devops_coding_input_log1.tsv'
 MAX_SIZE = 99999
-MAX_SIZE = 10
+MAX_SIZE = 300
 
 execfile("forecast.py")
 

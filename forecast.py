@@ -16,6 +16,7 @@ try:
   import urllib, urllib2
   import json
   import csv
+  import math
 except ImportError as err_str:
   print( "{}, make sure module exists on your server".format(err_str) ) 
   exit()
@@ -88,25 +89,20 @@ def scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 )
 
 
 def report_histogram( temperatures, num_buckets = 5 ):
-  print( "Starting histogram" )
-
   assert( num_buckets > 1 )
 
   # A third party modules like numpy would be better if this use case becomes more complex 
   # Use standard modules for now to simplify deployment on other servers
-
-  max_int = max(temperatures)   
-  min_int = min(temperatures)   
-  print( "Max int: " + str( max_int ) )
-  print( "Min int: " + str( min_int ) )
+  
+  # Make sure all temperatures are int 
+  temperatures = [int(x) for x in temperatures]
 
   max_temp = float( max(temperatures) )   
   min_temp = float( min(temperatures) )   
-  print( "Max Temp: " + str( max_temp ) )
-  print( "Min Temp: " + str( min_temp ) )
   assert( max_temp > min_temp )
 
-  step = float( (max_temp - min_temp) / (num_buckets-1) )
+  step = float( (max_temp - min_temp) / num_buckets )
+  step = math.ceil( step )
   bucket_count = []
 
   # All temperatures can not be the same
@@ -114,10 +110,8 @@ def report_histogram( temperatures, num_buckets = 5 ):
 
   bottom = min_temp
   top = min_temp + step
-  print( "bottom:", bottom, " step:", step )
 
-  while top <= max_temp: 
-    print( bottom, top )
+  while bottom <= max_temp: 
     count = 0
     for temp in temperatures:
       temp = float( temp )
