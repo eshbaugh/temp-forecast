@@ -58,11 +58,12 @@ def _get_location( ip, service = 'http://ip-api.com/json/' ):
 def _get_location2( ip, service = 'http://ip-api.com/json/' ):
   location = urllib.urlopen( service + ip ).read()
   location_json = json.loads( location )
-#  print( location_json )
+
   try: 
     print( location_json['city'] + ',' + location_json['region'] + ',' + location_json['countryCode'] + ',' + location_json['zip'] )
   except:
     print "Ignoring incomplte location name info"
+    print location_json
 
   geo_loc = []
   geo_loc.append( location_json['lat'] )
