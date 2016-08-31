@@ -3,14 +3,14 @@ This Python module will read the IP addresses from the 24th column in the input 
 
 ### Usage
 To except all default values
-* Linux: ./forecast.py 
-* Windows: c:\Python27\python.exe c:\<location of script>\forecast.py
+- Linux: ./forecast.py 
+- Windows: c:\Python27\python.exe c:\<location of script>\forecast.py
 
 Additional arguments
 forecast.py [input file] [output file] [histogram buckets] [max records]
 
 ### TODO 
-* parse argements
+* parse argements DONE
 * create an ouptut tsv file
 * create readme
 * cleanup code
