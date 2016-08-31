@@ -51,8 +51,8 @@ def _get_location( ip, service = 'http://ip-api.com/json/' ):
   location_json = json.loads( location )
 #  print( location_json )
   print( location_json['city'] + ',' + location_json['region'] + ',' + location_json['countryCode'] + ',' + location_json['zip'] )
-#  print( location_json['lon'] )
-#  print( location_json['lat'] )
+  print( location_json['lon'] )
+  print( location_json['lat'] )
 
   return location_json['zip']
 
@@ -68,6 +68,20 @@ def _get_woeid( zip = 80301 ):
   data = json.loads(result)
 
   return data['query']['results']['place'][0]['woeid']
+
+# Return the Where On Earth ID based on a zip code for now
+# Default is Boulder CO.
+def _get_woeid2( lat, long ):
+  # Reference: https://developer.yahoo.com/weather/
+  baseurl = "https://query.yahooapis.com/v1/public/yql?"
+  yql_query = "select * from geo.places where text=\"(" + str( lat ) + ", " + str( long ) + ")\"" 
+  yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
+  result = urllib2.urlopen(yql_url).read()
+  data = json.loads(result)
+  return data['query']['results']['place']['woeid']
+
+
+#  return data['query']['place']['content'][0]['woeid']
 
 
 def scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 ):
