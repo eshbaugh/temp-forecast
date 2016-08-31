@@ -7,6 +7,7 @@ To except all default values
 - Windows: c:\Python27\python.exe c:\<location of script>\forecast.py
 
 Additional arguments
+
 forecast.py [input file] [output file] [histogram buckets] [max records]
 - input file: Tab-separated data file with the 24th column containing IP addresses
 - output file: Location of the file that will be created and contain the output of the histogram buckets
