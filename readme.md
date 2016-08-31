@@ -1,13 +1,21 @@
-# Temp forcast
+# Temperature Forcast
+This Python module will read the IP addresses from the 24th column in the input file .tsv file and using the the Yahoo weather service determine the weather forcast for tomorrow in that region.  The output is another .tsv file that contains histogram data of the frequence of occurence of each tempature with the range defined by each specific histogram buckets. The number of histogram buckets along with the max number of IPs to be checked is configurable from the command line. 
 
-### Known Issues
-- 393 Failures obtaining Temperatures, need to use more localizable location Not Zip Code
-  - Burlington,ON,CA,L7R
-  - Saint-Quentin,NB,CA,E8A
-  - Singapore,01,SG,
-  - Allahabad,UP,IN,
-  - Allahabad,UP,IN,
+### Usage 
+* Linux: 
+./forecast.py <input file> <output file> <histogram buckets> [max records]
 
+* Windows: 
+c:\Python27\python.exe c:\<location of script>\forecast.py <input file> <output file> <histogram buckets> [max records]
+
+This last argument, max records is optional and if omitted the entire input file will be processed
+
+### TODO 
+* parse argements
+* create an ouptut tsv file
+* create readme
+* cleanup code
+* Class / modules?
 
 ### Useful Links
 
