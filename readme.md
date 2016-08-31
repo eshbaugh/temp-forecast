@@ -14,6 +14,10 @@ forecast.py [input file] [output file] [histogram buckets] [max records]
 - Histogram buckets: The number of categories between the minimum and maximum temperature to place counts of the temperatures in that range.
 - max records: Limits the number of items read from the input file, default is unlimited.
 
+To display command help
+
+forecast.py -h 
+
 ### TODO 
 * parse argements DONE
 * create an ouptut tsv file
