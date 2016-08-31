@@ -2,11 +2,14 @@
 
 """a Python module that parces a file for IP addresses and creates a histogram data for tomorrows high temps
 
-Classes:
-  GeoWeather: Contains geographic and weather methods and utilities
-  Log: Creates and manages log files
-  Parse: Reads the source file and creates a list of IP addresses
-  Histogram
+Methods
+  _scan_for_ip: Scan the passed file and return a list of IPs listed in column 24 
+  _get_location: Obtain the latitude and longitude from an IP address
+  _get_woeid: Obtain the woeid using the latitude and longitude
+  _get_tomorrows_high_temperature: Get tomorrows high temperature for the Where On Earth ID (woeid) location
+  _report_histogram: Output the number of temperatures in each histogram bucket to a .tsv file format 
+  main: The orchastrator for this method
+
 
 Troubleshooting:
   This module was built and tested with Python 2.7.11 on Ubuntu Linux. 
@@ -27,53 +30,7 @@ except ImportError as err_str:
 ZERO_TOL = .001
 
 
-
-# Returns tomorrows high temperature in deg F. for the location specified
-# by the passed Where On Earth ID, default is Boulder CO, US
-def _get_tomorrows_high_temp( woeid = 2367231 ):
-  # Reference: https://developer.yahoo.com/weather/
-  baseurl = "https://query.yahooapis.com/v1/public/yql?"
-  yql_query = "select * from weather.forecast where woeid=" + str( woeid )
-  yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
-  result = urllib2.urlopen(yql_url).read()
-  data = json.loads(result)
-
-  return data['query']['results']['channel']['item']['forecast'][1]['high']
-
-
-# Returns latitude and longitude for the passed IP
-def _get_location( ip, service = 'http://ip-api.com/json/' ):
-  location = urllib.urlopen( service + ip ).read()
-  location_json = json.loads( location )
-
-  try: 
-    print( location_json['city'] + ',' + location_json['region'] + ',' + location_json['countryCode'] + ',' + location_json['zip'] )
-  except:
-    print "Ignoring incomplte location name info"
-    print location_json
-
-  geo_loc = []
-  geo_loc.append( location_json['lat'] )
-  geo_loc.append( location_json['lon'] )
-
-  return geo_loc
-
-# Return the Where On Earth ID based on a zip code for now
-# Default is Boulder CO.
-
-# Return the Where On Earth ID based on a zip code for now
-# Default is Boulder CO.
-def _get_woeid( lat, long ):
-  # Reference: https://developer.yahoo.com/weather/
-  baseurl = "https://query.yahooapis.com/v1/public/yql?"
-  yql_query = "select * from geo.places where text=\"(" + str( lat ) + ", " + str( long ) + ")\"" 
-  yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
-  result = urllib2.urlopen(yql_url).read()
-  data = json.loads(result)
-  return data['query']['results']['place']['woeid']
-
-
-def scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 ):
+def _scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 ):
   ip_list = []
 
   # Pandas.pydata.org would be better but to keep this simple just use brute force column parsing
@@ -90,7 +47,50 @@ def scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 )
 
   return ip_list
 
-def report_histogram( temperatures, num_buckets = 5 ):
+
+# Returns latitude and longitude for the passed IP
+def _get_location( ip, service = 'http://ip-api.com/json/' ):
+  location = urllib.urlopen( service + ip ).read()
+  location_json = json.loads( location )
+
+  try: 
+    print( location_json['city'] + ',' + location_json['region'] + ',' + location_json['countryCode'] + ',' + location_json['zip'] )
+  except:
+    print "Ignoring incomplte location name info"
+    print location_json
+
+  geo_loc = []
+  geo_loc.append( location_json['lat'] )
+  geo_loc.append( location_json['lon'] )
+  return geo_loc
+
+
+# Return the Where On Earth ID based on a zip code for now
+# Default is Boulder CO.
+def _get_woeid( lat, long ):
+  # Reference: https://developer.yahoo.com/weather/
+  baseurl = "https://query.yahooapis.com/v1/public/yql?"
+  yql_query = "select * from geo.places where text=\"(" + str( lat ) + ", " + str( long ) + ")\"" 
+  yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
+  result = urllib2.urlopen(yql_url).read()
+  data = json.loads(result)
+  return data['query']['results']['place']['woeid']
+
+
+# Returns tomorrows high temperature in deg F. for the location specified
+# by the passed Where On Earth ID, default is Boulder CO, US
+def _get_tomorrows_high_temp( woeid = 2367231 ):
+  # Reference: https://developer.yahoo.com/weather/
+  baseurl = "https://query.yahooapis.com/v1/public/yql?"
+  yql_query = "select * from weather.forecast where woeid=" + str( woeid )
+  yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
+  result = urllib2.urlopen(yql_url).read()
+  data = json.loads(result)
+
+  return data['query']['results']['channel']['item']['forecast'][1]['high']
+  
+
+def _report_histogram( temperatures, outfile, num_buckets = 5 ):
   assert( num_buckets > 1 )
 
   # A third party modules like numpy would be better if this use case becomes more complex 
@@ -138,7 +138,7 @@ def report_histogram( temperatures, num_buckets = 5 ):
 def main( in_file, out_file, buckets, max_records ):
   print in_file, out_file, buckets, max_records
 
-  ip_list = scan_for_ip( in_file, max_records )
+  ip_list = _scan_for_ip( in_file, max_records )
 
   temperatures=[]
 
@@ -156,7 +156,7 @@ def main( in_file, out_file, buckets, max_records ):
       print( ">>>>>ip failrure: " + str( ip ) )
 
   print temperatures
-  report_histogram( temperatures )
+  _report_histogram( temperatures, out_file, buckets )
 
   print( "Done total failures: "  + str( fails ) )
 
@@ -169,4 +169,4 @@ parser.add_argument( 'buckets', metavar = 'histogram', type = int, nargs='?', de
 parser.add_argument( 'max_records', metavar = 'maxrecords', type = int, nargs='?', default = 5, help='Maximum number of records processed: default unlimited' ) 
 args = parser.parse_args( )
 
-main( args.input_filename, args.output_filename, args.buckets, args.max_records )
+#main( args.input_filename, args.output_filename, args.buckets, args.max_records )

@@ -1,8 +1,8 @@
 #!/usr/bin/python
 # make sure to invoke this test from the root directory - ./tests/temperature.py
 
-INFILE = 'data/ip_list.tsv'
-OUTFILE = 'data/temperature_list.tsv'
+INFILE = 'data/ip_list_short.tsv'
+OUTFILE = 'data/temperature_test.tmp'
 
 execfile("forecast.py")
 
@@ -15,9 +15,11 @@ fails = 0
 passes = 0
 for ip in ip_list:
   try: 
-    high_temp = get_high_temp_from_ip( ip )
+    geo_loc = _get_location( ip )
+    woeid = _get_woeid( geo_loc[0], geo_loc[1] )
+    high_temp = _get_tomorrows_high_temp( woeid )
 
-    #print( "IP:",ip," Temp:" + str( high_temp ) )
+    print( "IP:",ip," Temp:" + str( high_temp ) )
     ff.write( high_temp + '\n' )
     passes += 1
   except:

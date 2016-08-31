@@ -1,13 +1,13 @@
 #!/usr/bin/python
 # make sure to invoke this test from the root directory - ./tests/parse.py
 
-OUTFILE = 'data/ip_list.tsv'
-INFILE = 'data/devops_coding_input_log1.tsv'
+INFILE = 'data/devops_coding_input_short.tsv'
+OUTFILE = 'data/ip_list_test.tmp'
 MAX_SIZE = 99999
 
 execfile("forecast.py")
 
-ip_list = scan_for_ip( INFILE, MAX_SIZE )
+ip_list = _scan_for_ip( INFILE, MAX_SIZE )
 
 ff = open( OUTFILE, 'w' )
 for ip in ip_list:

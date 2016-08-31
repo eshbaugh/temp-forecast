@@ -3,8 +3,8 @@
 
 execfile("forecast.py")
 
-INFILE = 'data/ip_list.tsv'
-print "Reading file"
+INFILE = 'data/ip_list_short.tsv'
+
 ff = open( INFILE, 'r' )
 ip_list = ff.read().splitlines()
 ff.close()
@@ -15,8 +15,8 @@ pass_count = 0
 print "Processing ip list"
 for ip in ip_list:
   try:
-    geo_loc = _get_location2( ip )
-    woeid = _get_woeid2( geo_loc[0], geo_loc[1] )
+    geo_loc = _get_location( ip )
+    woeid = _get_woeid( geo_loc[0], geo_loc[1] )
     high_temp = _get_tomorrows_high_temp( woeid )
     print high_temp
     pass_count += 1
@@ -25,5 +25,3 @@ for ip in ip_list:
     fail_count += 1
 
 print "Failures:", fail_count, " Passes:", pass_count, " Total: ", fail_count + pass_count
-
-
