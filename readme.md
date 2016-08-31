@@ -4,7 +4,9 @@ This Python module will read the IP addresses from the 24th column in the input 
 ### Usage
 To except all default values
 - Linux: ./forecast.py 
-- Windows: c:\Python27\python.exe c:\<location of script>\forecast.py
+- Windows: 
+  - cd c:\location of the script
+  - c:\Python27\python.exe .\forecast.py
 
 Additional arguments
 
