@@ -1,15 +1,14 @@
 #!/usr/bin/python
 
-"""a Python module that parces a file for IP addresses and creates a histogram data for tomorrows high temps
+"""a Python module that parses a file for IP addresses and creates a histogram data for tomorrow's high temps
 
 Methods
   _scan_for_ip: Scan the passed file and return a list of IPs listed in column 24 
   _get_location: Obtain the latitude and longitude from an IP address
   _get_woeid: Obtain the woeid using the latitude and longitude
-  _get_tomorrows_high_temperature: Get tomorrows high temperature for the Where On Earth ID (woeid) location
+  _get_tomorrows_high_temperature: Get tomorrow's high temperature for the Where On Earth ID (woeid) location
   _report_histogram: Output the number of temperatures in each histogram bucket to a .tsv file format 
-  main: The orchastrator for this method
-
+  main: The orchestrator for this method
 
 Troubleshooting:
   This module was built and tested with Python 2.7.11 on Ubuntu Linux. 
@@ -26,8 +25,9 @@ except ImportError as err_str:
   print( "{}, make sure this module exists on your server".format(err_str) ) 
   exit()
 
+
 # Constants
-ZERO_TOL = .001
+ZERO_TOL = .1
 
 
 def _scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 ):
@@ -105,7 +105,7 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
 
   step = float( (max_temp - min_temp) / num_buckets )
   step = math.ceil( step )
-  bucket_count = []
+  buckets = []
 
   # All temperatures can not be the same
   assert( abs(max_temp - min_temp) > ZERO_TOL )
@@ -113,26 +113,38 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
   bottom = min_temp
   top = min_temp + step
 
+  total = 0
   while bottom <= max_temp: 
     count = 0
     for temp in temperatures:
       temp = float( temp )
       if bottom <= temp and temp <= top:
-        count = count + 1
+        count += 1
+        total += 1
        
+    item = [bottom, top, count]
+    buckets.append( item )
+
     bottom = top + ZERO_TOL # avoid counting the same number twice
     top = top + step
       
-    bucket_count.append( count )
+  ff = open( OUTFILE, 'w' )
+  ff.write( "BucketMin\tBucketMax\tcount\n" )
+
+  for item in buckets:
+    out_str = str(item[0]) + "\t" + str(item[1]) + "\t" + str(item[2]) + "\n"
+    print out_str
+    ff.write( out_str )
+
+  ff.close()
 
   print "Requested buckets:", num_buckets 
-  print bucket_count
-  print sum( bucket_count ), "out of ", len( temperatures )
+  print total, "out of", len( temperatures ), "added" 
 
-  # Check that every high tempertature is accounted for 
-  assert( sum( bucket_count ) == len( temperatures ) )
+  # All tempertatures are accounted for 
+  assert( total == len( temperatures ) )
 
-  return bucket_count
+  return buckets
 
 
 def main( in_file, out_file, buckets, max_records ):
@@ -149,11 +161,11 @@ def main( in_file, out_file, buckets, max_records ):
       woeid = _get_woeid( geo_loc[0], geo_loc[1] )
       high_temp = _get_tomorrows_high_temp( woeid )
         
-      print( "IP:",ip," Temp:" + str( high_temp ) )
+      print "IP:",ip," Temp:" + str( high_temp ) 
       temperatures.append( high_temp )
     except:
       fails += 1
-      print( ">>>>>ip failrure: " + str( ip ) )
+      print ">>>>>ip failrure: " + str( ip ) 
 
   print temperatures
   _report_histogram( temperatures, out_file, buckets )
@@ -169,4 +181,4 @@ parser.add_argument( 'buckets', metavar = 'histogram', type = int, nargs='?', de
 parser.add_argument( 'max_records', metavar = 'maxrecords', type = int, nargs='?', default = 5, help='Maximum number of records processed: default unlimited' ) 
 args = parser.parse_args( )
 
-#main( args.input_filename, args.output_filename, args.buckets, args.max_records )
+main( args.input_filename, args.output_filename, args.buckets, args.max_records )
