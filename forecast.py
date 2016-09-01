@@ -163,7 +163,7 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
 
 def main( in_file, out_file, buckets, max_records ):
 
-  if max_records <= buckets:
+  if max_records > 0 and max_records <= buckets:
     print "Error: the number of records to process must greater than the number of buckets"
     exit()
 
