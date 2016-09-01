@@ -203,21 +203,21 @@ def main( in_file, out_file, buckets, max_records ):
       geo_loc = _get_location( ip )
     except Exception as error:
       bad_locations += 1
-      print error 
+      print "\n",error 
       continue
 
     try:
       woeid = _get_woeid( geo_loc[0], geo_loc[1] )
     except Exception as error:
       bad_woeids += 1
-      print error 
+      print "\n",error 
       continue
     
     try: 
       high_temp = _get_tomorrows_high_temp( woeid )
     except Exception as error:
       bad_weather += 1
-      print error 
+      print "\n",error 
       continue
 
     temperatures.append( high_temp )
