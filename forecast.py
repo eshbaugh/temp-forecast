@@ -69,7 +69,7 @@ def _get_location( ip, service = 'http://ip-api.com/json/' ):
   location_json = json.loads( location )
 
   if location_json['status'] == 'fail':
-    raise Exception("Error:Unable to determine a location for IP:" + ip)
+    raise Exception("Error: Unable to determine a location for IP:" + ip)
 
   geo_loc = []
   geo_loc.append( location_json['lat'] )
@@ -83,19 +83,27 @@ def _get_woeid( lat, long ):
   yql_query = "select * from geo.places where text=\"(" + str( lat ) + ", " + str( long ) + ")\"" 
   yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
   result = urllib2.urlopen(yql_url).read()
-  data = json.loads(result)
-  return data['query']['results']['place']['woeid']
+  woeid_json = json.loads(result)
+
+#  print woeid_json
+#  print woeid_json['status'] 
+#  if woeid_json['status'] == 'fail':
+#    raise Exception("Error: Unable to determine a woeid for location " + str(lat) + "," + str(long) )
+
+  return woeid_json['query']['results']['place']['woeid']
 
 
-def _get_tomorrows_high_temp( woeid = 2367231 ):
-  # Reference: https://developer.yahoo.com/weather/
+def _get_tomorrows_high_temp( woeid = 2367231 ): # Default is Boulder, CO
   baseurl = "https://query.yahooapis.com/v1/public/yql?"
   yql_query = "select * from weather.forecast where woeid=" + str( woeid )
   yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
   result = urllib2.urlopen(yql_url).read()
-  data = json.loads(result)
+  temp_json = json.loads(result)
 
-  return data['query']['results']['channel']['item']['forecast'][1]['high']
+#  if temp_json['status'] == 'fail':
+#    raise Exception("Error: Unable to determine a high temperature for woeid " + str(woeid) ) 
+
+  return temp_json['query']['results']['channel']['item']['forecast'][1]['high']
   
 
 def _report_histogram( temperatures, outfile, num_buckets = 5 ):
@@ -154,6 +162,11 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
 
 
 def main( in_file, out_file, buckets, max_records ):
+
+  if max_records <= buckets:
+    print "Error: the number of records to process must greater than the number of buckets"
+    exit()
+
   print "Starting processing at time: " + time.strftime( "%H:%M:%S" )
 
   try:
@@ -163,6 +176,9 @@ def main( in_file, out_file, buckets, max_records ):
     exit()
 
   total_records = len( ip_list )
+  if total_records <= buckets:
+    print "Error: the number of records in the input file must greater than the number of buckets"
+    exit()
 
   ip_list, bad_ips = _validate_ip_list( ip_list )
 
@@ -206,6 +222,12 @@ def main( in_file, out_file, buckets, max_records ):
 
     temperatures.append( high_temp )
 
+  try:
+    total_processed = _report_histogram( temperatures, out_file, buckets )
+  except Exception as error:
+    print error 
+    total_processed = 0
+
   print "\nDone processing at time: " + time.strftime( "%H:%M:%S" )
 
   if bad_locations > 0:
@@ -219,8 +241,6 @@ def main( in_file, out_file, buckets, max_records ):
   if bad_weather > 0:
     percent_bad = (float(bad_weather) / float(total_records)) * 100.0
     print "Unable to determine weather for", bad_weather, "({:3.1f}%) of records".format(percent_bad)
-
-  total_processed = _report_histogram( temperatures, out_file, buckets )
 
   succeed_count = len( temperatures )
 
