@@ -188,7 +188,7 @@ def main( in_file, out_file, buckets, max_records ):
       geo_loc = _get_location( ip )
     except Exception as error:
       bad_locations += 1
-      print "\Get location error-",error 
+      print "\nGet location error-",error 
       continue
 
     try:
