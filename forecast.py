@@ -186,7 +186,7 @@ def main( in_file, out_file, buckets, max_records ):
 
   if bad_ips > 0:
     percent_bad = (float(bad_ips) / float(total_records)) * 100.0
-    print "Invalid IP addresses encountered:", bad_ips, "({:3.1f}%)".format(percent_bad)
+    print "Invalid IP addresses encountered:", bad_ips, "({:3.2f}%)".format(percent_bad)
 
   temperatures=[]
 
@@ -232,15 +232,15 @@ def main( in_file, out_file, buckets, max_records ):
 
   if bad_locations > 0:
     percent_bad = (float(bad_locations) / float(total_records)) * 100.0
-    print "Unable to determin locations for", bad_locations, "({:3.1f}%) of records".format(percent_bad)
+    print "Unable to determin locations for", bad_locations, "({:3.2f}%) of records".format(percent_bad)
 
   if bad_woeids > 0:
     percent_bad = (float(bad_woeids) / float(total_records)) * 100.0
-    print "Unable to determine WOEID locations for", bad_woeids, "({:3.1f}%) of records".format(percent_bad)
+    print "Unable to determine WOEID locations for", bad_woeids, "({:3.2f}%) of records".format(percent_bad)
 
   if bad_weather > 0:
     percent_bad = (float(bad_weather) / float(total_records)) * 100.0
-    print "Unable to determine weather for", bad_weather, "({:3.1f}%) of records".format(percent_bad)
+    print "Unable to determine weather for", bad_weather, "({:3.2f}%) of records".format(percent_bad)
 
   succeed_count = len( temperatures )
 
