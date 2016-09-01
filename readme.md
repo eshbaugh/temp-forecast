@@ -24,16 +24,6 @@ To display command help
 
 forecast.py -h 
 
-### TODO 
-* parse argements DONE
-* create an ouptut tsv file
-* Error Checking
-* Log File
-* create readme WIP
-* cleanup code
-* Class / modules?
-
-
 ### Further Development 
 - Performance tune: Currently it can take a few hours to run 4000 records, speed will become prohibitive with 40,000 ++
   - Identify top time takers, my guess is it is the REST calls

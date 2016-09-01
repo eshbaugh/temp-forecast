@@ -182,11 +182,7 @@ def main( in_file, out_file, buckets, max_records ):
 
   ip_list, bad_ips = _validate_ip_list( ip_list )
 
-  print "Obtaining next day forcast for", len(ip_list), " IP addresses"
-
-  if bad_ips > 0:
-    percent_bad = (float(bad_ips) / float(total_records)) * 100.0
-    print "Invalid IP addresses encountered:", bad_ips, "({:3.2f}%)".format(percent_bad)
+  print "Obtaining next day forcast for", len(ip_list), "IP addresses"
 
   temperatures=[]
 
@@ -230,9 +226,13 @@ def main( in_file, out_file, buckets, max_records ):
 
   print "\nDone processing at time: " + time.strftime( "%H:%M:%S" )
 
+  if bad_ips > 0:
+    percent_bad = (float(bad_ips) / float(total_records)) * 100.0
+    print "Invalid IP addresses encountered:", bad_ips, "({:3.2f}%)".format(percent_bad)
+
   if bad_locations > 0:
     percent_bad = (float(bad_locations) / float(total_records)) * 100.0
-    print "Unable to determin locations for", bad_locations, "({:3.2f}%) of records".format(percent_bad)
+    print "Unable to determine locations for", bad_locations, "({:3.2f}%) of records".format(percent_bad)
 
   if bad_woeids > 0:
     percent_bad = (float(bad_woeids) / float(total_records)) * 100.0
@@ -253,7 +253,7 @@ def main( in_file, out_file, buckets, max_records ):
 parser = argparse.ArgumentParser( description='Find tomorrows high temperature for regions specified by IPs')
 parser.add_argument( 'input_filename', metavar = 'infile', type = str, nargs='?', default = './data/devops_coding_input_log1.tsv', help='Input filename' ) 
 parser.add_argument( 'output_filename', metavar = 'outfile', type = str, nargs='?', default = './data/output.tsv', help='Output filename' ) 
-parser.add_argument( 'buckets', metavar = 'histogram', type = int, nargs='?', default = 5, help='Number of histogram buckets: default 5' ) 
+parser.add_argument( 'buckets', metavar = 'buckets', type = int, nargs='?', default = 5, help='Number of histogram buckets: default 5' ) 
 parser.add_argument( 'max_records', metavar = 'maxrecords', type = int, nargs='?', default = -1, help='Maximum number of records processed: default unlimited' ) 
 args = parser.parse_args( )
 
