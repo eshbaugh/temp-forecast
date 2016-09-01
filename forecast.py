@@ -198,7 +198,6 @@ def main( in_file, out_file, buckets, max_records ):
       print "\nGet woeid error-",error 
       continue
     
-    sys.stdout.write('b')
     try: 
       high_temp = _get_tomorrows_high_temp( woeid )
     except Exception as error:
@@ -206,10 +205,8 @@ def main( in_file, out_file, buckets, max_records ):
       print "\nGet temperature error-",error 
       continue
 
-    sys.stdout.write('c')
     temperatures.append( high_temp )
 
-    sys.stdout.write('d')
   try:
     total_processed = _report_histogram( temperatures, out_file, buckets )
   except Exception as error:
