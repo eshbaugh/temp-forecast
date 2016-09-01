@@ -3,7 +3,7 @@ This Python module will read the IP addresses from the input file .tsv file and 
 service determine the weather forecast for tomorrow in that region.  The output is another .tsv file 
 that contains histogram data of the frequency of occurrence for each temperature with the range defined 
 by each specific histogram buckets. The number of histogram buckets along with the max number of IPs to 
-be checked is configurable from the command line. 
+be processed is configurable from the command line. 
 
 ### Usage
 To except all default values
