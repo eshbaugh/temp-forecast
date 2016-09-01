@@ -68,6 +68,9 @@ def _get_location( ip, service = 'http://ip-api.com/json/' ):
   location = urllib.urlopen( service + ip ).read()
   location_json = json.loads( location )
 
+  if location_json['status'] == 'fail':
+    raise Exception("Error:Unable to determine a location for IP:" + ip)
+
   geo_loc = []
   geo_loc.append( location_json['lat'] )
   geo_loc.append( location_json['lon'] )
@@ -159,17 +162,22 @@ def main( in_file, out_file, buckets, max_records ):
     print error 
     exit()
 
-  total_file_records = len( ip_list )
+  total_records = len( ip_list )
 
   ip_list, bad_ips = _validate_ip_list( ip_list )
 
-  if bad_ips > 0:
-    print "Invalid ip addresses encountered:", bad_ips
+  print "Obtaining next day forcast for", len(ip_list), " IP addresses"
 
-  exit()
+  if bad_ips > 0:
+    percent_bad = (float(bad_ips) / float(total_records)) * 100.0
+    print "Invalid IP addresses encountered:", bad_ips, "({:3.1f}%)".format(percent_bad)
+
   temperatures=[]
 
-  fails = 0
+  bad_locations = 0
+  bad_woeids = 0
+  bad_weather = 0 # :-)
+
   for ip in ip_list:
     # makeshift progress meter
     sys.stdout.write('.')
@@ -177,25 +185,48 @@ def main( in_file, out_file, buckets, max_records ):
     
     try:
       geo_loc = _get_location( ip )
+    except Exception as error:
+      bad_locations += 1
+      print error 
+      continue
+
+    try:
       woeid = _get_woeid( geo_loc[0], geo_loc[1] )
+    except Exception as error:
+      bad_woeids += 1
+      print error 
+      continue
+    
+    try: 
       high_temp = _get_tomorrows_high_temp( woeid )
-        
-      temperatures.append( high_temp )
-    except ValueError as err:
-      fails += 1
-      print "\nError: Unable to obtain location for ip: " + str( ip ) 
+    except Exception as error:
+      bad_weather += 1
+      print error 
+      continue
+
+    temperatures.append( high_temp )
+
+  print "\nDone processing at time: " + time.strftime( "%H:%M:%S" )
+
+  if bad_locations > 0:
+    percent_bad = (float(bad_locations) / float(total_records)) * 100.0
+    print "Unable to determin locations for", bad_locations, "({:3.1f}%) of records".format(percent_bad)
+
+  if bad_woeids > 0:
+    percent_bad = (float(bad_woeids) / float(total_records)) * 100.0
+    print "Unable to determine WOEID locations for", bad_woeids, "({:3.1f}%) of records".format(percent_bad)
+
+  if bad_weather > 0:
+    percent_bad = (float(bad_weather) / float(total_records)) * 100.0
+    print "Unable to determine weather for", bad_weather, "({:3.1f}%) of records".format(percent_bad)
 
   total_processed = _report_histogram( temperatures, out_file, buckets )
 
-  ip_count = len( ip_list )
-
-  total_ips = len( ip_list )
   succeed_count = len( temperatures )
 
-  print "\nDone processing at time: " + time.strftime( "%H:%M:%S" )
-  print "Successfully processed", succeed_count, "records out of",  total_ips, "ip addresses scanned"
+  print "Successfully processed", succeed_count, "records out of", total_records, "ip addresses scanned"
   print "View", out_file, "for histogram results"
-  print "Total failures: " + str( fails ) 
+  print "Total failures: " + str( bad_ips + bad_locations + bad_woeids + bad_weather ) 
 
 
 # Process command line arguments and call the main method
@@ -203,7 +234,7 @@ parser = argparse.ArgumentParser( description='Find tomorrows high temperature f
 parser.add_argument( 'input_filename', metavar = 'infile', type = str, nargs='?', default = './data/devops_coding_input_log1.tsv', help='Input filename' ) 
 parser.add_argument( 'output_filename', metavar = 'outfile', type = str, nargs='?', default = './data/output.tsv', help='Output filename' ) 
 parser.add_argument( 'buckets', metavar = 'histogram', type = int, nargs='?', default = 5, help='Number of histogram buckets: default 5' ) 
-parser.add_argument( 'max_records', metavar = 'maxrecords', type = int, nargs='?', default = 5, help='Maximum number of records processed: default unlimited' ) 
+parser.add_argument( 'max_records', metavar = 'maxrecords', type = int, nargs='?', default = -1, help='Maximum number of records processed: default unlimited' ) 
 args = parser.parse_args( )
 
 
