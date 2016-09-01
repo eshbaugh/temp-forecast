@@ -85,11 +85,6 @@ def _get_woeid( lat, long ):
   result = urllib2.urlopen(yql_url).read()
   woeid_json = json.loads(result)
 
-#  print woeid_json
-#  print woeid_json['status'] 
-#  if woeid_json['status'] == 'fail':
-#    raise Exception("Error: Unable to determine a woeid for location " + str(lat) + "," + str(long) )
-
   return woeid_json['query']['results']['place']['woeid']
 
 
@@ -99,9 +94,6 @@ def _get_tomorrows_high_temp( woeid = 2367231 ): # Default is Boulder, CO
   yql_url = baseurl + urllib.urlencode({'q':yql_query}) + "&format=json"
   result = urllib2.urlopen(yql_url).read()
   temp_json = json.loads(result)
-
-#  if temp_json['status'] == 'fail':
-#    raise Exception("Error: Unable to determine a high temperature for woeid " + str(woeid) ) 
 
   return temp_json['query']['results']['channel']['item']['forecast'][1]['high']
   
@@ -172,13 +164,10 @@ def main( in_file, out_file, buckets, max_records ):
   try:
     ip_list = _scan_for_ip( in_file, max_records )
   except Exception as error:
-    print error 
+    print "Scan IP error-", error 
     exit()
 
   total_records = len( ip_list )
-  if total_records <= buckets:
-    print "Error: the number of records in the input file must greater than the number of buckets"
-    exit()
 
   ip_list, bad_ips = _validate_ip_list( ip_list )
 
@@ -199,29 +188,32 @@ def main( in_file, out_file, buckets, max_records ):
       geo_loc = _get_location( ip )
     except Exception as error:
       bad_locations += 1
-      print "\n",error 
+      print "\Get location error-",error 
       continue
 
     try:
       woeid = _get_woeid( geo_loc[0], geo_loc[1] )
     except Exception as error:
       bad_woeids += 1
-      print "\n",error 
+      print "\nGet woeid error-",error 
       continue
     
+    sys.stdout.write('b')
     try: 
       high_temp = _get_tomorrows_high_temp( woeid )
     except Exception as error:
       bad_weather += 1
-      print "\n",error 
+      print "\nGet temperature error-",error 
       continue
 
+    sys.stdout.write('c')
     temperatures.append( high_temp )
 
+    sys.stdout.write('d')
   try:
     total_processed = _report_histogram( temperatures, out_file, buckets )
   except Exception as error:
-    print error 
+    print "Histogram error-", error 
     total_processed = 0
 
   print "\nDone processing at time: " + time.strftime( "%H:%M:%S" )
