@@ -26,10 +26,6 @@ except ImportError as err_str:
   exit()
 
 
-# Constants
-ZERO_TOL = .1
-
-
 def _scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 ):
   ip_list = []
 
@@ -52,12 +48,6 @@ def _scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 
 def _get_location( ip, service = 'http://ip-api.com/json/' ):
   location = urllib.urlopen( service + ip ).read()
   location_json = json.loads( location )
-
-  try: 
-    print( location_json['city'] + ',' + location_json['region'] + ',' + location_json['countryCode'] + ',' + location_json['zip'] )
-  except:
-    print "Ignoring incomplte location name info"
-    print location_json
 
   geo_loc = []
   geo_loc.append( location_json['lat'] )
@@ -91,6 +81,8 @@ def _get_tomorrows_high_temp( woeid = 2367231 ):
   
 
 def _report_histogram( temperatures, outfile, num_buckets = 5 ):
+  ZERO_TOL = .1
+
   assert( num_buckets > 1 )
 
   # A third party modules like numpy would be better if this use case becomes more complex 
@@ -128,12 +120,11 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
     bottom = top + ZERO_TOL # avoid counting the same number twice
     top = top + step
       
-  ff = open( OUTFILE, 'w' )
+  ff = open( outfile, 'w' )
   ff.write( "BucketMin\tBucketMax\tcount\n" )
 
   for item in buckets:
     out_str = str(item[0]) + "\t" + str(item[1]) + "\t" + str(item[2]) + "\n"
-    print out_str
     ff.write( out_str )
 
   ff.close()
@@ -144,11 +135,11 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
   # All tempertatures are accounted for 
   assert( total == len( temperatures ) )
 
-  return buckets
+  return total
 
 
 def main( in_file, out_file, buckets, max_records ):
-  print in_file, out_file, buckets, max_records
+  print "Starting processing: " + time.strftime( "%H:%M:%S )
 
   ip_list = _scan_for_ip( in_file, max_records )
 
@@ -161,16 +152,17 @@ def main( in_file, out_file, buckets, max_records ):
       woeid = _get_woeid( geo_loc[0], geo_loc[1] )
       high_temp = _get_tomorrows_high_temp( woeid )
         
-      print "IP:",ip," Temp:" + str( high_temp ) 
       temperatures.append( high_temp )
     except:
       fails += 1
-      print ">>>>>ip failrure: " + str( ip ) 
+      print "Error: Unable to obtain location for ip: " + str( ip ) 
 
-  print temperatures
-  _report_histogram( temperatures, out_file, buckets )
+  total_processed = _report_histogram( temperatures, out_file, buckets )
 
-  print( "Done total failures: "  + str( fails ) )
+  ip_count = len( ip_list )
+
+  print "Done" 
+  print total failures: " + str( fails ) + "out of " + ip_count  
 
 
 # Process command line arguments and call the main method
@@ -180,5 +172,6 @@ parser.add_argument( 'output_filename', metavar = 'outfile', type = str, nargs='
 parser.add_argument( 'buckets', metavar = 'histogram', type = int, nargs='?', default = 5, help='Number of histogram buckets: default 5' ) 
 parser.add_argument( 'max_records', metavar = 'maxrecords', type = int, nargs='?', default = 5, help='Maximum number of records processed: default unlimited' ) 
 args = parser.parse_args( )
+
 
 main( args.input_filename, args.output_filename, args.buckets, args.max_records )
