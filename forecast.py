@@ -4,33 +4,36 @@
 
 Methods
   _scan_for_ip: Scan the passed file and return a list of IPs listed in column 24 
+  _validate_ip_list: Removes any invalid or incorrectly formated IP addresses from the list
   _get_location: Obtain the latitude and longitude from an IP address
   _get_woeid: Obtain the woeid using the latitude and longitude
   _get_tomorrows_high_temperature: Get tomorrow's high temperature for the Where On Earth ID (woeid) location
   _report_histogram: Output the number of temperatures in each histogram bucket to a .tsv file format 
   main: The orchestrator for this method
 
-Troubleshooting:
+About / troubleshooting:
   This module was built and tested with Python 2.7.11 on Ubuntu Linux. 
-
 """ 
 
 try: 
   import urllib, urllib2
   import json
   import csv
+  import sys
   import math
   import argparse
+  import time
+  import socket
 except ImportError as err_str:
   print( "{}, make sure this module exists on your server".format(err_str) ) 
   exit()
 
 
-def _scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 ):
+def _scan_for_ip( in_file, max_num_ip = -1 ):
   ip_list = []
 
   # Pandas.pydata.org would be better but to keep this simple just use brute force column parsing
-  with open( file, 'r' ) as ff:
+  with open( in_file, 'r' ) as ff:
     for line in ff.readlines():
       cells = line.split( '\t' )
       # assume cell 
@@ -44,7 +47,23 @@ def _scan_for_ip( file = './data/devops_coding_input_log1.tsv', max_num_ip = -1 
   return ip_list
 
 
-# Returns latitude and longitude for the passed IP
+def _validate_ip_list( ip_list ):
+  error_count = 0
+
+  out_list = []
+
+  for ip in ip_list:
+    try:
+      socket.inet_aton( ip )
+    except:
+      print "Error:invalid IP address:", ip
+      error_count += 1
+    else:
+      out_list.append( ip )
+
+  return (out_list, error_count)
+
+
 def _get_location( ip, service = 'http://ip-api.com/json/' ):
   location = urllib.urlopen( service + ip ).read()
   location_json = json.loads( location )
@@ -55,8 +74,6 @@ def _get_location( ip, service = 'http://ip-api.com/json/' ):
   return geo_loc
 
 
-# Return the Where On Earth ID based on a zip code for now
-# Default is Boulder CO.
 def _get_woeid( lat, long ):
   # Reference: https://developer.yahoo.com/weather/
   baseurl = "https://query.yahooapis.com/v1/public/yql?"
@@ -67,8 +84,6 @@ def _get_woeid( lat, long ):
   return data['query']['results']['place']['woeid']
 
 
-# Returns tomorrows high temperature in deg F. for the location specified
-# by the passed Where On Earth ID, default is Boulder CO, US
 def _get_tomorrows_high_temp( woeid = 2367231 ):
   # Reference: https://developer.yahoo.com/weather/
   baseurl = "https://query.yahooapis.com/v1/public/yql?"
@@ -129,9 +144,6 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
 
   ff.close()
 
-  print "Requested buckets:", num_buckets 
-  print total, "out of", len( temperatures ), "added" 
-
   # All tempertatures are accounted for 
   assert( total == len( temperatures ) )
 
@@ -139,30 +151,51 @@ def _report_histogram( temperatures, outfile, num_buckets = 5 ):
 
 
 def main( in_file, out_file, buckets, max_records ):
-  print "Starting processing: " + time.strftime( "%H:%M:%S )
+  print "Starting processing at time: " + time.strftime( "%H:%M:%S" )
 
-  ip_list = _scan_for_ip( in_file, max_records )
+  try:
+    ip_list = _scan_for_ip( in_file, max_records )
+  except Exception as error:
+    print error 
+    exit()
 
+  total_file_records = len( ip_list )
+
+  ip_list, bad_ips = _validate_ip_list( ip_list )
+
+  if bad_ips > 0:
+    print "Invalid ip addresses encountered:", bad_ips
+
+  exit()
   temperatures=[]
 
   fails = 0
   for ip in ip_list:
+    # makeshift progress meter
+    sys.stdout.write('.')
+    sys.stdout.flush()
+    
     try:
       geo_loc = _get_location( ip )
       woeid = _get_woeid( geo_loc[0], geo_loc[1] )
       high_temp = _get_tomorrows_high_temp( woeid )
         
       temperatures.append( high_temp )
-    except:
+    except ValueError as err:
       fails += 1
-      print "Error: Unable to obtain location for ip: " + str( ip ) 
+      print "\nError: Unable to obtain location for ip: " + str( ip ) 
 
   total_processed = _report_histogram( temperatures, out_file, buckets )
 
   ip_count = len( ip_list )
 
-  print "Done" 
-  print total failures: " + str( fails ) + "out of " + ip_count  
+  total_ips = len( ip_list )
+  succeed_count = len( temperatures )
+
+  print "\nDone processing at time: " + time.strftime( "%H:%M:%S" )
+  print "Successfully processed", succeed_count, "records out of",  total_ips, "ip addresses scanned"
+  print "View", out_file, "for histogram results"
+  print "Total failures: " + str( fails ) 
 
 
 # Process command line arguments and call the main method
